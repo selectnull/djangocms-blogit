@@ -16,6 +16,7 @@ except ImportError:
 from mptt.models import MPTTModel, TreeForeignKey
 from parler.models import TranslatableModel, TranslatedFields
 from parler.managers import TranslatableManager
+from cms.models import CMSPlugin
 from cms.models.fields import PlaceholderField
 from cms.utils.i18n import get_current_language
 from filer.fields.image import FilerImageField
@@ -265,3 +266,41 @@ class Post(TranslatableModel):
             previous_next = (previous, next)
             setattr(self, 'previous_next', previous_next)
         return previous_next
+
+
+# Plugin configuration models
+
+@python_2_unicode_compatible
+class PostList(CMSPlugin):
+    number_of_posts = models.IntegerField(default=bs.POSTS_PER_PAGE)
+
+    show_paginator = models.BooleanField(default=True)
+    orphans = models.IntegerField(default=0)
+
+    filter_by_author = models.ForeignKey(
+        USER_MODEL, blank=True, null=True,
+        related_name='filtered_by_author',
+        verbose_name=_('Filter by author'),
+        help_text=_('Filter by author or leave blank for all authors.'))
+    filter_by_category = TreeForeignKey(
+        Category, blank=True, null=True,
+        related_name='filtered_by_category',
+        verbose_name=_('Category'),
+        help_text=_('Filter by category or leave blank for all categories.'))
+    filter_by_tags = models.ManyToManyField(
+        Tag, blank=True, null=True,
+        related_name='filtered_by_tags',
+        verbose_name=_('Tags'),
+        help_text=_('Filter by tags (one or more) or '
+                    'leave blank for all tags.'))
+
+    template_name = models.CharField(
+        max_length=200, blank=True,
+        choices=bs.POST_LIST_TEMPLATES,
+        help_text=_('Select a template or leave empty for default one.'))
+
+    class Meta:
+        db_table = 'blogit_post_lists'
+
+    def __str__(self):
+        return 'Post List'

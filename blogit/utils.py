@@ -10,6 +10,9 @@ try:
     from django.utils.encoding import force_unicode
 except ImportError:
     from django.utils.encoding import force_text as force_unicode
+from django.core.paginator import Paginator, InvalidPage
+from django.http import Http404
+from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.i18n import get_current_language
 
@@ -46,3 +49,39 @@ def get_text_from_placeholder(placeholder, language=None, request=None):
             continue
         bits.append(instance.render_plugin(context=RequestContext(request)))
     return force_unicode(strip_tags(' '.join(bits)))
+
+
+def paginate_queryset(queryset, page, do_paginate, page_size, orphans):
+    """
+    Paginate the queryset, if needed.
+
+    page is a page number (int) to return or 'last' for last page.
+
+    do_paginate is bool that determines if queryset should be paginated. If
+    it is False, the page_number will always be 1, eg. no other page can be
+    shown.
+
+    page_size and orphans are values passed to Paginator class
+    to do pagination.
+    """
+    paginator = Paginator(queryset, page_size, orphans=orphans)
+    if do_paginate:
+        try:
+            page_number = int(page)
+        except ValueError:
+            if page == 'last':
+                page_number = paginator.num_pages
+            else:
+                raise Http404(_("Page is not 'last', "
+                                "nor can it be converted to an int."))
+    else:
+        page_number = 1
+
+    try:
+        page = paginator.page(page_number)
+        return (paginator, page, page.object_list, page.has_other_pages())
+    except InvalidPage as e:
+        raise Http404(_('Invalid page (%(page_number)s): %(message)s') % {
+            'page_number': page_number,
+            'message': str(e)
+        })

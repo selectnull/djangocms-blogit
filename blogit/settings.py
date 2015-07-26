@@ -37,3 +37,10 @@ POSTS_PER_PAGE = getattr(settings, 'BLOGIT_POSTS_PER_PAGE', 10)
 # Show detail url by date.
 POST_DETAIL_DATE_URL = getattr(
     settings, 'BLOGIT_POST_DETAIL_DATE_URL', False)
+
+
+# Plugins settings
+USE_BUILTIN_LIST_VIEW = getattr(
+    settings, 'BLOGIT_USE_BUILTIN_LIST_VIEW', True)
+POST_LIST_TEMPLATES = getattr(
+    settings, 'BLOGIT_POST_LIST_TEMPLATES', ())

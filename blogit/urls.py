@@ -13,9 +13,11 @@ from blogit.views import (
 from blogit.feeds import PostRssFeed, PostAtomFeed
 
 
-pats = [
-    url(r'^$', PostListView.as_view(), name='blogit_post_list'),
+pats = []
+if bs.USE_BUILTIN_LIST_VIEW:
+    pats.append(url(r'^$', PostListView.as_view(), name='blogit_post_list'))
 
+pats.extend([
     url(r'^(?P<year>\d+)/(?P<month>[-\w\d]+)/(?P<day>\d+)/$',
         PostDayArchiveView.as_view(), name='blogit_post_archive_day'),
     url(r'^(?P<year>\d+)/(?P<month>[-\w\d]+)/$',
@@ -31,7 +33,7 @@ pats = [
     url(_(r'^tags/$'), TagListView.as_view(), name='blogit_tag_list'),
     url(_(r'^tags/(?P<slug>[-\w\d]+)/$'),
         TagDetailView.as_view(), name='blogit_tag_detail'),
-]
+])
 
 if bs.RSS_FEED:
     pats.extend([
